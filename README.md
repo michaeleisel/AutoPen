@@ -10,12 +10,14 @@ For large projects, the codesigning phase can add a significant amount of time t
 
 ### Usage
 
-To use AutoPen, follow these steps:
+Unfortunately, Xcode doesn't make swapping out `codesign` for AutoPen particularly easy, meaning that integration is easier with third-party build systems like Bazel. However, it is still doable with Xcode, with one caveat mentioned at the bottom of this section. Here are the steps:
 
 - Download AutoPen.zip from [here](https://github.com/michaeleisel/AutoPen/releases/latest), and extract AutoPen and libautopen.dylib from it. Make sure to keep these two files in the same directory when you run this tool.
 - In the Xcode build settings, add `--digest-algorithm=sha1` to "Other Code Signing Flags" . This is required for AutoPen to work, but also substantially reduces codesigning time in its own right. Also consider adding `--resource-rules /path/to/rules.xml` for even more speed. More info on these flags is [here](https://eisel.me/signing).
 - In Xcode build settings, add a user-defined setting of `CODE_SIGNING_ALLOWED` set to `NO`. This will disable Xcode's default codesigning in order to use AutoPen instead.
 - Add a "run script" build phase after all other build phases that runs AutoPen with the same exact flags that the default codesigning step previously did. E.g., `/path/to/AutoPen -s ${EXPANDED_CODE_SIGN_IDENTITY} --timestamp\=none --generate-entitlement-der --entitlements /path/to/entitlements.xcent ${OTHER_CODE_SIGN_FLAGS} ${CODESIGNING_FOLDER_PATH}`. Note that the `entitlements.xcent` file will change as the app's entitlements are changed, and the full set of flags that Xcode is adding for code signing may change across Xcode versions.
+ 
+__Caveat: with this approach, the build script will run even when nothing has changed, unlike normal codesigning. (It is currently a TODO to fix this)__
 
 ### Implementation Details
 
