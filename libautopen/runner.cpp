@@ -3,6 +3,7 @@
 #include <string>
 #include <iterator>
 #include <array>
+#include <algorithm>
 #include <optional>
 
 #include <mach-o/swap.h>
@@ -87,13 +88,21 @@ bool startsWith(const std::string &haystack, const std::string &needle) {
     return haystack.rfind(needle, 0) == 0;
 }
 
+static const std::vector<const std::string> kArgsThatTakeFlags = {"-a", "--architecture", "--bundle-version", "-D", "--detached", "-i", "--identifier", "-o", "--options", "-P", "--pagesize", "-r", "--requirements", "-R", "--test-requirement", "-s", "--sign", "--entitlements", "--extract-certificates", "--file-list", "--keychain", "--prefix", "--strict", "--timestamp", "--runtime-version"};
+
 int run(int argc, const char *argv[], const char *envp[], const char *apple[]) {
     sStart = relativeTime();
     const char *appPathArg = NULL;
     for (int i = 1; i < argc; i++) {
-        std::optional<std::string> prev = i == 1 ? std::nullopt : std::optional(std::string(argv[i - 1]));
-        std::string arg = std::string(argv[i]);
-        if (!startsWith(arg, "-") && (!prev || *prev == "-" || !startsWith(*prev, "-") || prev->find("=") != std::string::npos)) {
+        const auto arg = std::string(argv[i]);
+        const auto argIter = std::find(kArgsThatTakeFlags.begin(), kArgsThatTakeFlags.end(), arg);
+        bool takesArg = argIter != kArgsThatTakeFlags.end();
+        if (takesArg) {
+            i++; // Skip over the argument passed for this one
+        } else if (startsWith(arg, "--")) {
+            // It's a flag like --digest-algorithm=sha1, don't do anything
+        } else {
+            // It looks like it's the binary
             hardAssert(!appPathArg, "Multiple candidate binary names found, "s + (appPathArg ?: "") + " and " + argv[i]);
             appPathArg = argv[i];
         }
