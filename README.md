@@ -5,8 +5,9 @@
 
 For large projects, the codesigning phase can add a significant amount of time to incremental builds. This project provides an alternate version of `codesign` that is significantly faster. Under the hood, it essentially invokes `codesign` itself but with special runtime modifications made to `codesign` that cause it to run much faster.
 
-
 ***Note***: it is only intended for debug builds, to make debugging faster.
+
+***Note***: if you don't see a reduction in signing time of at least 50%, and your typical code signing time is > 1 second, feel free to file an issue
 
 ### Usage
 
