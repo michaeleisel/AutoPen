@@ -99,8 +99,8 @@ int run(int argc, const char *argv[], const char *envp[], const char *apple[]) {
         bool takesArg = argIter != kArgsThatTakeFlags.end();
         if (takesArg) {
             i++; // Skip over the argument passed for this one
-        } else if (startsWith(arg, "--")) {
-            // It's a flag like --digest-algorithm=sha1, don't do anything
+        } else if (startsWith(arg, "-")) {
+            // It's a flag like --digest-algorithm=sha1 or -d, don't do anything
         } else {
             // It looks like it's the binary
             hardAssert(!appPathArg, "Multiple candidate binary names found, "s + (appPathArg ?: "") + " and " + argv[i]);
