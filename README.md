@@ -3,18 +3,18 @@
 
 ### Introduction
 
-For large projects, the codesigning phase can add a significant amount of time to incremental builds. This project provides an alternate version of `codesign` that is significantly faster. Under the hood, it essentially invokes `codesign` itself but with special runtime modifications made to `codesign` that cause it to run much faster.
+For large projects, the codesigning phase can add a significant amount of time to incremental builds. This project provides an alternate version of `codesign` that is significantly faster. Under the hood, it essentially invokes `codesign` itself but with special runtime modifications made to `codesign` that cause it to run much faster. This project is intended for debug builds only, to improve development speed.
 
-***Note***: it is only intended for debug builds, to make debugging faster.
+***Note***: consider adding `--digest-algorithm=sha1` and `--resource-rules /path/to/rules.xml` to your codesigning flags before you integrate this project, as they are lower-hanging fruit for improving your signing time. More info on these flags is [here](https://eisel.me/signing).
 
-***Note***: if you don't see a reduction in signing time of at least 50%, and your typical code signing time is > 1 second, feel free to file an issue
+***Note***: if you don't see a reduction in signing time of at least 50%, and your typical code signing time is > 1 second, and you've already added the `--resource-rules` flag, feel free to file an issue
 
 ### Usage
 
 Unfortunately, Xcode doesn't make swapping out `codesign` for AutoPen particularly easy, meaning that integration is easier with third-party build systems like Bazel. However, it is still doable with Xcode, with one caveat mentioned at the bottom of this section. Here are the steps:
 
 - Download AutoPen.zip from [here](https://github.com/michaeleisel/AutoPen/releases/latest), and extract AutoPen and libautopen.dylib from it. Make sure to keep these two files in the same directory when you run this tool.
-- In the Xcode build settings, add `--digest-algorithm=sha1` to "Other Code Signing Flags" . This is required for AutoPen to work, but also substantially reduces codesigning time in its own right. Also consider adding `--resource-rules /path/to/rules.xml` for even more speed. More info on these flags is [here](https://eisel.me/signing).
+- In the Xcode build settings, add `--digest-algorithm=sha1` to "Other Code Signing Flags" . This is required for AutoPen to work.
 - In Xcode build settings, add a user-defined setting of `CODE_SIGNING_ALLOWED` set to `NO`. This will disable Xcode's default codesigning in order to use AutoPen instead.
 - Add a "run script" build phase after all other build phases that runs AutoPen with the same exact flags that the default codesigning step previously did. E.g.: 
 ```
